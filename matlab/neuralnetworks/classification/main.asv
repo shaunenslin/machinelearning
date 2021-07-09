@@ -1,0 +1,29 @@
+clear;
+% open csv file
+tbl = readtable('test.csv');
+
+% replace strings fields with labels
+ds(:,1) = grp2idx(tbl{:,2});
+ds(:,2) = grp2idx(tbl{:,3});
+ds(:,3) = tbl{:,4};
+ds(:,4) = grp2idx(tbl{:,5});
+ds(:,5) = grp2idx(tbl{:,6});
+ds(:,6) = tbl{:,7};
+ds(:,7) = grp2idx(tbl{:,8});
+ds(:,8) = tbl{:,9};
+[ds(:,9),labels] = grp2idx(tbl{:,10});
+
+% remove rows with NaN
+ds = rmmissing(ds); 
+[m,n] = size(ds);
+
+X = [ones(m,1) ds(:,[2 4 8])]; 
+y = ds(:,n);
+
+input_layer_size  = size(X,2)-1;            % Dimension of features 
+hidden_layer_size = input_layer_size*2;             % number of units in hidden layer
+num_labels = size(labels,1);        % number of labels
+
+
+
+
