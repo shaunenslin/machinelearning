@@ -41,16 +41,19 @@ def nnCostFunction2(nn_params, input_layer_size, hidden_layer_size, num_labels, 
     # Add ones to the X data matrix
     X = np.insert(X, 0, 1, axis=1)
 
+    # Perform forward propagation for layer 2
     z2 = np.matmul(X, Theta1.transpose())
     a2 = sigmoid(z2)
     a2 = np.insert(a2, 0, 1, axis=1)
     z3 = np.matmul(a2, Theta2.transpose())
     a3 = sigmoid(z3)
 
+    # turn Y into a matrix with a new column for each category and marked with 1
     y_one_hot = np.zeros_like(a3)
     for i in range(m):
         y_one_hot[i, y[i] - 1] = 1
 
+    # Calculate the cost of our forward prop
     ones = np.ones_like(a3)
     A = np.matmul(y_one_hot.transpose(), np.log(a3)) + \
         np.matmul((ones - y_one_hot).transpose(), np.log(ones - a3))
@@ -58,6 +61,7 @@ def nnCostFunction2(nn_params, input_layer_size, hidden_layer_size, num_labels, 
     J += lambda_ / (2 * m) * \
         (np.sum(Theta1[:, 1:] ** 2) + np.sum(Theta2[:, 1:] ** 2))
 
+    # Perform backward propagation to calculate deltas & gradients
     delta3 = a3 - y_one_hot
     delta2 = np.matmul(delta3, Theta2[:, 1:]) * sigmoidGradient(z2)
     Theta2_grad = np.matmul(a2.transpose(), delta3).transpose()
@@ -71,64 +75,64 @@ def nnCostFunction2(nn_params, input_layer_size, hidden_layer_size, num_labels, 
     return J, grad
 
 
-def nnCostFunction(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, lambda_):
-    # Reshape nn_params back into the parameters Theta1 and Theta2, the weight matrices for our 2 layer neural network
-    Theta1 = nn_params[:hidden_layer_size * (input_layer_size + 1)].reshape(
-        (hidden_layer_size, input_layer_size + 1))
-    Theta2 = nn_params[hidden_layer_size *
-                       (input_layer_size + 1):].reshape((num_labels, hidden_layer_size + 1))
+# def nnCostFunction(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, lambda_):
+#     # Reshape nn_params back into the parameters Theta1 and Theta2, the weight matrices for our 2 layer neural network
+#     Theta1 = nn_params[:hidden_layer_size * (input_layer_size + 1)].reshape(
+#         (hidden_layer_size, input_layer_size + 1))
+#     Theta2 = nn_params[hidden_layer_size *
+#                        (input_layer_size + 1):].reshape((num_labels, hidden_layer_size + 1))
 
-    # Setup some useful variables
-    m = X.shape[0]
+#     # Setup some useful variables
+#     m = X.shape[0]
 
-    # Add ones to the X data matrix
-    a1 = np.insert(X, 0, 1, axis=1)
+#     # Add ones to the X data matrix
+#     a1 = np.insert(X, 0, 1, axis=1)
 
-    # Perform forward propagation for layer 2
-    z2 = np.matmul(a1, Theta1.transpose())
-    a2 = np.insert(sigmoid(z2), 0, 1, axis=1)
+#     # Perform forward propagation for layer 2
+#     z2 = np.matmul(a1, Theta1.transpose())
+#     a2 = np.insert(sigmoid(z2), 0, 1, axis=1)
 
-    # perform forward propagation for layer 3
-    z3 = np.matmul(a2, Theta2.transpose())
-    a3 = sigmoid(z3)
+#     # perform forward propagation for layer 3
+#     z3 = np.matmul(a2, Theta2.transpose())
+#     a3 = sigmoid(z3)
 
-    # turn Y into a matrix with a new column for each category and marked with 1
-    yv = np.zeros_like(a3)
-    for i in range(m):
-        yv[i, y[i] - 1] = 1
+#     # turn Y into a matrix with a new column for each category and marked with 1
+#     yv = np.zeros_like(a3)
+#     for i in range(m):
+#         yv[i, y[i] - 1] = 1
 
-    # calculate penalty without theta0
-    p = sum(sum(np.power(Theta1[:, 1:], 2))) + \
-        sum(sum(np.power(Theta2[:, 1:], 2)))
+#     # calculate penalty without theta0
+#     p = sum(sum(np.power(Theta1[:, 1:], 2))) + \
+#         sum(sum(np.power(Theta2[:, 1:], 2)))
 
-    # Calculate the cost of our forward prop
-    J = sum(sum(-yv * np.log(a3) - (1 - yv) * np.log(1 - a3), 2)) / \
-        (m + lambda_ * p/(2*m))
+#     # Calculate the cost of our forward prop
+#     J = sum(sum(-yv * np.log(a3) - (1 - yv) * np.log(1 - a3), 2)) / \
+#         (m + lambda_ * p/(2*m))
 
-    # Perform backward propagation to calculate deltas
-    s3 = a3 - yv
-    # s2 = (s3*Theta2).*sigmoidGradient([ones(size(z2, 1), 1) z2]); % remove z2 bias column
-    s2 = np.matmul(s3, Theta2) * \
-        sigmoidGradient(np.insert(z2, 0, 1, axis=1))
-    s2 = s2[:, 1:]
-    #s2 = np.matmul(s3, Theta2[:, 1:]) * sigmoidGradient(z2)
+#     # Perform backward propagation to calculate deltas
+#     s3 = a3 - yv
+#     # s2 = (s3*Theta2).*sigmoidGradient([ones(size(z2, 1), 1) z2]); % remove z2 bias column
+#     s2 = np.matmul(s3, Theta2) * \
+#         sigmoidGradient(np.insert(z2, 0, 1, axis=1))
+#     s2 = s2[:, 1:]
+#     #s2 = np.matmul(s3, Theta2[:, 1:]) * sigmoidGradient(z2)
 
-    # Calculate DELTA's (accumulated deltas)
-    delta_1 = np.matmul(s2.transpose(), a1)
-    delta_2 = np.matmul(s3.transpose(), a2)
+#     # Calculate DELTA's (accumulated deltas)
+#     delta_1 = np.matmul(s2.transpose(), a1)
+#     delta_2 = np.matmul(s3.transpose(), a2)
 
-    # calculate regularized gradient, replace 1st column with zeros
-    p1 = (lambda_/m) * np.insert(Theta1[:, 1:], 0, 0, axis=1)
-    p2 = (lambda_/m) * np.insert(Theta2[:, 1:], 0, 0, axis=1)
+#     # calculate regularized gradient, replace 1st column with zeros
+#     p1 = (lambda_/m) * np.insert(Theta1[:, 1:], 0, 0, axis=1)
+#     p2 = (lambda_/m) * np.insert(Theta2[:, 1:], 0, 0, axis=1)
 
-    # gradients / partial derivitives
-    Theta1_grad = delta_1 / m + p1
-    Theta2_grad = delta_2 / m + p2
-    grad = np.concatenate(
-        (Theta1_grad.flatten(), Theta2_grad.flatten()), axis=None)
+#     # gradients / partial derivitives
+#     Theta1_grad = delta_1 / m + p1
+#     Theta2_grad = delta_2 / m + p2
+#     grad = np.concatenate(
+#         (Theta1_grad.flatten(), Theta2_grad.flatten()), axis=None)
 
-    # # unroll gradients
-    return J, grad
+#     # # unroll gradients
+#     return J, grad
 
 
 def checkNNGradients(lambda_=0):
@@ -148,8 +152,8 @@ def checkNNGradients(lambda_=0):
     nn_params = np.concatenate([Theta1.reshape(-1), Theta2.reshape(-1)])
 
     # Short hand for cost function
-    def costFunc(p): return nnCostFunction(p, input_layer_size,
-                                           hidden_layer_size, num_labels, X, y, lambda_)
+    def costFunc(p): return nnCostFunction2(p, input_layer_size,
+                                            hidden_layer_size, num_labels, X, y, lambda_)
 
     cost, grad = costFunc(nn_params)
     numgrad = computeNumericalGradient(costFunc, nn_params)
